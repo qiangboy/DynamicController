@@ -1,9 +1,12 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 
 namespace Service;
 
-[Authorize]
+/// <summary>
+/// 用户服务
+/// </summary>
 public class UserService : IDynamicController
 {
     [Authorize]
@@ -19,6 +22,11 @@ public class UserService : IDynamicController
         return ids;
     }
 
+    /// <summary>
+    /// 获取列表
+    /// </summary>
+    /// <param name="input"></param>
+    /// <returns></returns>
     public CreateUserDto GetList(CreateUserDto input)
     {
         return input;
@@ -53,10 +61,32 @@ public class UserService : IDynamicController
     {
         return ids;
     }
+
+    public Task<CreateUserDto> RevokeAsync(CreateUserDto input)
+    {
+        return Task.FromResult(input);
+    }
+
+    [Authorize]
+    public Task<List<int>> Import()
+    {
+        return Task.FromResult(new List<int>() { 1, 2, 3 });
+    }
 }
 
+/// <summary>
+/// 这是注释
+/// </summary>
 public class CreateUserDto
 {
+    /// <summary>
+    /// 用户名
+    /// </summary>
+    [Required]
     public string Username { get; set; }
+
+    /// <summary>
+    /// 密码
+    /// </summary>
     public string Password { get; set; }
 }

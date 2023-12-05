@@ -12,7 +12,12 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    // using System.Reflection;
+    var xmlFilename2 = $"Service.xml";
+    options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename2));
+});
 
 // 在ASP.NET Core应用程序中加载动态控制器
 //var assembly = Assembly.LoadFrom(Path.Combine(Environment.CurrentDirectory, "Service.dll"));
@@ -56,6 +61,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.MapSwagger().RequireAuthorization();
 
 app.UseAuthentication();
 app.UseAuthorization();

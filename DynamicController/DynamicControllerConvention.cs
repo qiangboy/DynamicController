@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
-
-namespace DynamicController;
+﻿namespace DynamicController;
 
 public class DynamicControllerConvention : IApplicationModelConvention
 {
@@ -12,68 +10,77 @@ public class DynamicControllerConvention : IApplicationModelConvention
         { HttpMethod.Delete.Method, new[] { "Delete", "Remove" } }
     };
 
+    private readonly string[] _deletionPostFix = new[] { "Service" };
+
     public void Apply(ApplicationModel application)
     {
-        //循环每一个控制器信息
+        // 循环控制器
         foreach (var controller in application.Controllers)
         {
             var controllerType = controller.ControllerType.AsType();
-            //是否继承ICoreDynamicController接口
+            // 是否实现ICoreDynamicController接口
             if (typeof(IDynamicController).IsAssignableFrom(controllerType))
             {
-                controller.ControllerName = controllerType.Name.RemovePostFix(StringComparison.OrdinalIgnoreCase, "Service");
-
-                foreach (var actionModel in controller.Actions)
-                {
-                    ConfigureSelector(controller.ControllerName, actionModel);
-                }
+                ConfigureApplicationService(controller);
             }
         }
     }
 
-    private void ConfigureSelector(string controllerName, ActionModel action)
+    private void ConfigureApplicationService(ControllerModel controller)
     {
-        var httpMethod = GetHttpMethod(action);
+        // 设置控制器名称
+        controller.ControllerName = controller.ControllerName.RemovePostFix(StringComparison.OrdinalIgnoreCase, _deletionPostFix);
 
-        // 移除为null的AttributeRouteModel
-        for (var i = 0; i < action.Selectors.Count; i++)
+        foreach (var action in controller.Actions)
         {
-            if (action.Selectors[i].AttributeRouteModel is null)
-            {
-                action.Selectors.Remove(action.Selectors[i]);
-            }
+            ConfigureSelector(action);
+            ConfigureParameters(action);
         }
+    }
+
+    private void ConfigureSelector(ActionModel action)
+    {
+        RemoveEmptySelectors(action.Selectors);
 
         if (action.Selectors.Any())
         {
             foreach (var selectorModel in action.Selectors)
             {
-                // 改为统一的路由地址
-                var routePath = BuildRoutePath(action, controllerName, httpMethod);
-                var routeModel = new AttributeRouteModel(new RouteAttribute(routePath));
-                //如果没有路由属性
-                selectorModel.AttributeRouteModel ??= routeModel;
+                ConfigureSelectorModel(selectorModel, action);
             }
         }
         else
         {
-            action.Selectors.Add(CreateActionSelector(controllerName, action));
+            action.Selectors.Add(CreateActionSelector(action));
         }
-
-        BindingParameters(action);
     }
 
-    private SelectorModel CreateActionSelector(string controllerName, ActionModel action)
+    private static void RemoveEmptySelectors(IList<SelectorModel> selectors)
+    {
+        for (var i = selectors.Count - 1; i >= 0; i--)
+        {
+            var selector = selectors[i];
+            if (selector.AttributeRouteModel is null &&
+                !selector.ActionConstraints.Any() &&
+                !selector.EndpointMetadata.Any())
+            {
+                selectors.Remove(selector);
+            }
+        }
+    }
+
+    private SelectorModel CreateActionSelector(ActionModel action)
     {
         var selectorModel = new SelectorModel();
-        var httpMethod = GetHttpMethod(action);
 
-        return ConfigureSelectorModel(selectorModel, action, controllerName, httpMethod);
+        return ConfigureSelectorModel(selectorModel, action);
     }
 
-    public SelectorModel ConfigureSelectorModel(SelectorModel selectorModel, ActionModel action, string controllerName, string httpMethod)
+    public SelectorModel ConfigureSelectorModel(SelectorModel selectorModel, ActionModel action)
     {
-        var routePath = BuildRoutePath(action, controllerName, httpMethod);
+        var httpMethod = GetHttpMethod(action);
+
+        var routePath = BuildRoutePath(action);
         // 给此Action添加路由
         selectorModel.AttributeRouteModel = new AttributeRouteModel(new RouteAttribute(routePath));
         // 添加HttpMethod
@@ -82,8 +89,9 @@ public class DynamicControllerConvention : IApplicationModelConvention
         return selectorModel;
     }
 
-    private string BuildRoutePath(ActionModel action, string controllerName, string httpMethod)
+    private string BuildRoutePath(ActionModel action)
     {
+        var httpMethod = GetHttpMethod(action);
         // 移除Action动词前缀
         var postFix = _actionNameConventionMap
             .First(m => m.Key.Equals(httpMethod, StringComparison.OrdinalIgnoreCase))
@@ -101,7 +109,7 @@ public class DynamicControllerConvention : IApplicationModelConvention
             actionName = actionName.RemovePreFix(StringComparison.OrdinalIgnoreCase, "List").ToKebabCase();
         }
 
-        controllerName = controllerName.RemovePostFix(StringComparison.OrdinalIgnoreCase, "Service").ToKebabCase();
+        var controllerName = action.Controller.ControllerName.RemovePostFix(StringComparison.OrdinalIgnoreCase, _deletionPostFix).ToKebabCase();
 
         return $"api/{controllerName}/{actionName}";
     }
@@ -123,39 +131,30 @@ public class DynamicControllerConvention : IApplicationModelConvention
         return map.Key;
     }
 
-    private void BindingParameters(ActionModel action)
+    private void ConfigureParameters(ActionModel action)
     {
         var actionHttpMethod = GetHttpMethod(action);
 
         if (actionHttpMethod == HttpMethod.Post.Method)
         {
-            foreach (var parameterModel in action.Parameters)
+            foreach (var parameter in action.Parameters)
             {
-                parameterModel.BindingInfo = new BindingInfo
-                {
-                    BindingSource = BindingSource.Body
-                };
+                parameter.BindingInfo = BindingInfo.GetBindingInfo(new[] { new FromBodyAttribute() });
             }
         }
 
         if (actionHttpMethod == HttpMethod.Put.Method)
         {
-            foreach (var parameterModel in action.Parameters)
+            foreach (var parameter in action.Parameters)
             {
                 // 参数名以id结尾
-                if (parameterModel.ParameterName.EndsWith("id", StringComparison.OrdinalIgnoreCase) || parameterModel.ParameterType.IsPrimitive)
+                if (parameter.ParameterName.EndsWith("id", StringComparison.OrdinalIgnoreCase) || parameter.ParameterType.IsPrimitive)
                 {
-                    parameterModel.BindingInfo = new BindingInfo
-                    {
-                        BindingSource = BindingSource.Path
-                    };
+                    parameter.BindingInfo = BindingInfo.GetBindingInfo(new[] { new FromRouteAttribute() });
                 }
                 else
                 {
-                    parameterModel.BindingInfo = new BindingInfo
-                    {
-                        BindingSource = BindingSource.Body
-                    };
+                    parameter.BindingInfo = BindingInfo.GetBindingInfo(new[] { new FromBodyAttribute() });
                 }
             }
         }
