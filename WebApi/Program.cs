@@ -1,44 +1,64 @@
-using Microsoft.AspNetCore.Mvc.ApplicationParts;
-using Service;
-using System.Reflection;
-using DynamicController;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.AspNetCore.Mvc.ApplicationModels;
+using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(options =>
-{
-    // using System.Reflection;
-    var xmlFilename2 = $"Service.xml";
-    options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename2));
-});
+builder.Services.AddSingleton<DynamicControllerConvention>();
 
-// 在ASP.NET Core应用程序中加载动态控制器
-//var assembly = Assembly.LoadFrom(Path.Combine(Environment.CurrentDirectory, "Service.dll"));
-//var assembly = Assembly.LoadFrom(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Service.dll"));
-var assembly = typeof(UserService).Assembly;
-
-// 添加动态加载的程序集到ApplicationPartManager
-var manager = new ApplicationPartManager();
-manager.ApplicationParts.Add(new AssemblyPart(assembly));
+builder.Services
+    .AddOptions<MvcOptions>()
+    .Configure<DynamicControllerConvention>((options, convention) =>
+    {
+        options.Conventions.Add(convention);
+    });
 
 // 注册动态控制器
 builder.Services.AddControllers(options =>
 {
-    options.Conventions.Add(new DynamicControllerConvention());
+    
+}).ConfigureApiBehaviorOptions(options =>
+{
+    //options.SuppressMapClientErrors = false;
+    //options.SuppressModelStateInvalidFilter = false;
 }).ConfigureApplicationPartManager(partManager =>
 {
-    //partManager.ApplicationParts.Add(new AssemblyPart(assembly));
     partManager.FeatureProviders.Add(new DynamicControllerFeatureProvider());
 });
 
-builder.Services.Configure<List<HttpMethodInfo>>(builder.Configuration.GetSection("HttpMethodInfo"));
+// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1", Description = "描述"});
+
+    options.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
+    {
+        Type = SecuritySchemeType.OAuth2,
+        Flows = new OpenApiOAuthFlows
+        {
+            AuthorizationCode = new OpenApiOAuthFlow
+            {
+                // 使用配置
+                AuthorizationUrl = new Uri($"http://124.221.169.49:5000/connect/authorize"),
+                TokenUrl = new Uri($"http://124.221.169.49:5000/connect/token"),
+                Scopes = new Dictionary<string, string>
+                {
+                    { "openid", "openid" },
+                    { "profile", "profile" }
+                }
+            }
+        }
+    });
+
+
+    options.OperationFilter<AuthorizeCheckOperationFilter>();
+    // using System.Reflection;
+    var xmlFilename2 = $"Service.xml";
+    options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename2), true);
+    var xmlFilename = $"WebApi.xml";
+    options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename), true);
+});
 
 builder.Services
     .AddAuthentication("Bearer")
@@ -59,10 +79,14 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
-}
+    app.UseSwaggerUI(options =>
+    {
+        options.OAuthClientId("test");
+        options.OAuthClientSecret("non");
+        options.OAuthScopes("openid profile");
 
-app.MapSwagger().RequireAuthorization();
+    });
+}
 
 app.UseAuthentication();
 app.UseAuthorization();

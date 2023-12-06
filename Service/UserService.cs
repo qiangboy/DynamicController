@@ -5,9 +5,11 @@ using Microsoft.AspNetCore.Http;
 namespace Service;
 
 /// <summary>
-/// 用户服务
+/// Description: 用户服务
+/// Created on: 2023/10/25 9:55:35
 /// </summary>
-public class UserService : IDynamicController
+
+public class UserService : ApplicationService
 {
     [Authorize]
     [ProducesResponseType(StatusCodes.Status201Created)]
@@ -32,14 +34,14 @@ public class UserService : IDynamicController
         return input;
     }
 
-    public bool Create(CreateUserDto input)
+    public bool Create([FromQuery] CreateUserDto input)
     {
         return true;
     }
 
-    public bool Put(int id, CreateUserDto input)
+    public object Put(int id, CreateUserDto input)
     {
-        return true;
+        return new { id, input };
     }
 
     public List<CreateUserDto> UpdateBatch(List<CreateUserDto> input)
@@ -47,9 +49,9 @@ public class UserService : IDynamicController
         return input;
     }
 
-    public bool Delete(int id)
+    public int Delete(int id)
     {
-        return true;
+        return id;
     }
 
     public bool RemoveAll()
@@ -70,7 +72,7 @@ public class UserService : IDynamicController
     [Authorize]
     public Task<List<int>> Import()
     {
-        return Task.FromResult(new List<int>() { 1, 2, 3 });
+        return Task.FromResult(new List<int> { 1, 2, 3 });
     }
 }
 
@@ -89,4 +91,10 @@ public class CreateUserDto
     /// 密码
     /// </summary>
     public string Password { get; set; }
+
+    /// <summary>
+    /// 年龄
+    /// </summary>
+    [Required]
+    public int? Age { get; set; }
 }

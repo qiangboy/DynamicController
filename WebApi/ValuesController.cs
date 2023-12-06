@@ -1,11 +1,14 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Service;
 
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace WebApi
 {
+    /// <summary>
+    /// Description: 用户服务
+    /// Created by: 郑守强
+    /// Created on: 2023/10/25 9:55:35
+    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     public class ValuesController : ControllerBase
@@ -31,7 +34,11 @@ namespace WebApi
         {
         }
 
-        // PUT api/<ValuesController>/5
+        /// <summary>
+        /// 修改操作
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="value"></param>
         [HttpPut("{id}")]
         public void Put(int id, [FromBody] string value)
         {

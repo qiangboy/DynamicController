@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.8.34316.72
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DynamicController", "DynamicController\DynamicController.csproj", "{BAC961A9-DC61-45B9-9A4A-D92A52587A50}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DynamicController", "DynamicController\DynamicController.csproj", "{BAC961A9-DC61-45B9-9A4A-D92A52587A50}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebApi", "WebApi\WebApi.csproj", "{18034B11-B0AA-40DB-8C03-2139F4937C98}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebApi", "WebApi\WebApi.csproj", "{18034B11-B0AA-40DB-8C03-2139F4937C98}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Service", "Service\Service.csproj", "{FAA31D45-CC9E-4382-85EA-74AEA6E1407D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Service", "Service\Service.csproj", "{FAA31D45-CC9E-4382-85EA-74AEA6E1407D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

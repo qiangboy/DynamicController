@@ -1,10 +1,16 @@
-﻿namespace DynamicController;
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+
+namespace DynamicController;
 
 public class DynamicControllerConvention : IApplicationModelConvention
 {
+    private readonly ApiBehaviorOptions _apiBehaviorOptions;
+    private readonly ILoggerFactory _loggerFactory;
+
     private readonly IDictionary<string, string[]> _actionNameConventionMap = new Dictionary<string, string[]>
     {
-        { HttpMethod.Get.Method, new[] { "Get", "Query", "Search" } },
+        { HttpMethod.Get.Method, new[] { "Get", "Query", "Search", "Find", "Fetch" } },
         { HttpMethod.Post.Method, new[] { "Create", "Save", "Insert", "Add", "Post" } },
         { HttpMethod.Put.Method, new[] { "Put", "Update", "Edit" } },
         { HttpMethod.Delete.Method, new[] { "Delete", "Remove" } }
@@ -12,8 +18,16 @@ public class DynamicControllerConvention : IApplicationModelConvention
 
     private readonly string[] _deletionPostFix = new[] { "Service" };
 
+    public DynamicControllerConvention(IOptions<ApiBehaviorOptions> apiBehaviorOptions, ILoggerFactory loggerFactory)
+    {
+        _apiBehaviorOptions = apiBehaviorOptions.Value;
+        _loggerFactory = loggerFactory;
+    }
+
+
     public void Apply(ApplicationModel application)
     {
+        //Microsoft.AspNetCore.Mvc.Infrastructure.ModelStateInvalidFilterFactory
         // 循环控制器
         foreach (var controller in application.Controllers)
         {
@@ -24,6 +38,7 @@ public class DynamicControllerConvention : IApplicationModelConvention
                 ConfigureApplicationService(controller);
             }
         }
+        
     }
 
     private void ConfigureApplicationService(ControllerModel controller)
@@ -35,6 +50,9 @@ public class DynamicControllerConvention : IApplicationModelConvention
         {
             ConfigureSelector(action);
             ConfigureParameters(action);
+
+            
+            //new InvalidModelStateFilterConvention().Apply(action);
         }
     }
 
@@ -124,7 +142,7 @@ public class DynamicControllerConvention : IApplicationModelConvention
         }
 
         var map = _actionNameConventionMap
-            .FirstOrDefault(m => 
+            .FirstOrDefault(m =>
                 m.Value.Any(v => action.ActionMethod.Name.StartsWith(v, StringComparison.OrdinalIgnoreCase)),
                 _actionNameConventionMap.First(m => m.Key == HttpMethod.Post.Method));
 
@@ -133,30 +151,29 @@ public class DynamicControllerConvention : IApplicationModelConvention
 
     private void ConfigureParameters(ActionModel action)
     {
-        var actionHttpMethod = GetHttpMethod(action);
-
-        if (actionHttpMethod == HttpMethod.Post.Method)
+        if (!action.Parameters.Any())
         {
-            foreach (var parameter in action.Parameters)
-            {
-                parameter.BindingInfo = BindingInfo.GetBindingInfo(new[] { new FromBodyAttribute() });
-            }
+            return;
         }
 
-        if (actionHttpMethod == HttpMethod.Put.Method)
+        if (new[] { HttpMethod.Get.Method, HttpMethod.Head.Method }.Contains(GetHttpMethod(action)))
         {
-            foreach (var parameter in action.Parameters)
+            return;
+        }
+
+        foreach (var parameter in action.Parameters)
+        {
+            if (parameter.BindingInfo is not null)
             {
-                // 参数名以id结尾
-                if (parameter.ParameterName.EndsWith("id", StringComparison.OrdinalIgnoreCase) || parameter.ParameterType.IsPrimitive)
-                {
-                    parameter.BindingInfo = BindingInfo.GetBindingInfo(new[] { new FromRouteAttribute() });
-                }
-                else
-                {
-                    parameter.BindingInfo = BindingInfo.GetBindingInfo(new[] { new FromBodyAttribute() });
-                }
+                continue;
             }
+
+            if (parameter.ParameterType.IsPrimitive)
+            {
+                continue;
+            }
+
+            parameter.BindingInfo = new BindingInfo { BindingSource = BindingSource.Body };
         }
     }
 }
