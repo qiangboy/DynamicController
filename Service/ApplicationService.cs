@@ -1,10 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc.Infrastructure;
+﻿namespace Service;
 
-namespace Service;
-
-//[Route("")]
-//[ApiController]
 [Produces("application/json")]
-public class ApplicationService : /*ControllerBase,*/ IDynamicController, IApiBehaviorMetadata
+public abstract class ApplicationService : IDynamicController
 {
 }

@@ -16,8 +16,7 @@ public static class StringExtensions
     /// </summary>
     public static string EnsureEndsWith(this string str, char c, StringComparison comparisonType = StringComparison.Ordinal)
     {
-        if (str is null)
-            throw new ArgumentNullException(nameof(str));
+        ArgumentNullException.ThrowIfNull(str);
 
         if (str.EndsWith(c.ToString(), comparisonType))
             return str;
@@ -30,8 +29,7 @@ public static class StringExtensions
     /// </summary>
     public static string EnsureStartsWith(this string str, char c, StringComparison comparisonType = StringComparison.Ordinal)
     {
-        if (str is null)
-            throw new ArgumentNullException(nameof(str));
+        ArgumentNullException.ThrowIfNull(str);
 
         if (str.StartsWith(c.ToString(), comparisonType))
         {
@@ -64,15 +62,14 @@ public static class StringExtensions
     /// <exception cref="ArgumentException">Thrown if <paramref name="len"/> is bigger that string's length</exception>
     public static string Left(this string? str, int len)
     {
-        if (str is null)
-            throw new ArgumentNullException(nameof(str));
+        ArgumentNullException.ThrowIfNull(str);
 
         if (str.Length < len)
         {
             throw new ArgumentException("len argument can not be bigger than given string's length!");
         }
 
-        return str.Substring(0, len);
+        return str[..len];
     }
 
     /// <summary>
@@ -91,8 +88,7 @@ public static class StringExtensions
     /// <param name="n">Count of the occurrence</param>
     public static int NthIndexOf(this string str, char c, int n)
     {
-        if (str is null)
-            throw new ArgumentNullException(nameof(str));
+        ArgumentNullException.ThrowIfNull(str);
 
         var count = 0;
         for (var i = 0; i < str.Length; i++)
@@ -204,8 +200,7 @@ public static class StringExtensions
     /// <exception cref="ArgumentNullException"></exception>
     public static string ReplaceFirst(this string str, string search, string replace, StringComparison comparisonType = StringComparison.Ordinal)
     {
-        if (str is null)
-            throw new ArgumentNullException(nameof(str));
+        ArgumentNullException.ThrowIfNull(str);
 
         var pos = str.IndexOf(search, comparisonType);
         if (pos < 0)
@@ -213,7 +208,7 @@ public static class StringExtensions
             return str;
         }
 
-        return str.Substring(0, pos) + replace + str.Substring(pos + search.Length);
+        return str[..pos] + replace + str[(pos + search.Length)..];
     }
 
     /// <summary>
@@ -223,8 +218,7 @@ public static class StringExtensions
     /// <exception cref="ArgumentException">Thrown if <paramref name="len"/> is bigger that string's length</exception>
     public static string Right(this string str, int len)
     {
-        if (str is null)
-            throw new ArgumentNullException(nameof(str));
+        ArgumentNullException.ThrowIfNull(str);
 
         if (str.Length < len)
         {
@@ -290,7 +284,7 @@ public static class StringExtensions
             return useCurrentCulture ? str.ToLower() : str.ToLowerInvariant();
         }
 
-        return (useCurrentCulture ? char.ToLower(str[0]) : char.ToLowerInvariant(str[0])) + str.Substring(1);
+        return (useCurrentCulture ? char.ToLower(str[0]) : char.ToLowerInvariant(str[0])) + str[1..];
     }
 
     /// <summary>
@@ -408,8 +402,8 @@ public static class StringExtensions
     public static T ToEnum<T>(this string value)
         where T : struct
     {
-        if (value is null)
-            throw new ArgumentNullException(nameof(value));
+        ArgumentNullException.ThrowIfNull(value);
+
         return (T)Enum.Parse(typeof(T), value);
     }
 
@@ -423,8 +417,8 @@ public static class StringExtensions
     public static T ToEnum<T>(this string value, bool ignoreCase)
         where T : struct
     {
-        if (value is null)
-            throw new ArgumentNullException(nameof(value));
+        ArgumentNullException.ThrowIfNull(value);
+
         return (T)Enum.Parse(typeof(T), value, ignoreCase);
     }
 
@@ -435,9 +429,8 @@ public static class StringExtensions
     /// <returns></returns>
     public static string ToMd5(this string str)
     {
-        using var md5 = MD5.Create();
         var inputBytes = Encoding.UTF8.GetBytes(str);
-        var hashBytes = md5.ComputeHash(inputBytes);
+        var hashBytes = MD5.HashData(inputBytes);
 
         var sb = new StringBuilder();
         foreach (var hashByte in hashBytes)
@@ -466,7 +459,7 @@ public static class StringExtensions
             return useCurrentCulture ? str.ToUpper() : str.ToUpperInvariant();
         }
 
-        return (useCurrentCulture ? char.ToUpper(str[0]) : char.ToUpperInvariant(str[0])) + str.Substring(1);
+        return (useCurrentCulture ? char.ToUpper(str[0]) : char.ToUpperInvariant(str[0])) + str[1..];
     }
 
     /// <summary>
@@ -552,10 +545,8 @@ public static class StringExtensions
     /// </summary>
     public static byte[] GetBytes(this string str, Encoding encoding)
     {
-        if (str is null)
-            throw new ArgumentNullException(nameof(str));
-        if (encoding is null)
-            throw new ArgumentNullException(nameof(encoding));
+        ArgumentNullException.ThrowIfNull(str);
+        ArgumentNullException.ThrowIfNull(encoding);
 
         return encoding.GetBytes(str);
     }

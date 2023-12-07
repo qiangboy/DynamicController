@@ -8,6 +8,8 @@ namespace WebApi;
 /// </summary>
 public class AuthorizeCheckOperationFilter : IOperationFilter
 {
+    private static readonly string[] item = new [] { "web api" };
+
     /// <summary>
     /// 应用
     /// </summary>
@@ -31,8 +33,7 @@ public class AuthorizeCheckOperationFilter : IOperationFilter
             {
                 new()
                 {
-                    [ oAuthScheme ] = new [] { "web api" }
-                }
+                    [ oAuthScheme ] = item }
             };
         }
     }

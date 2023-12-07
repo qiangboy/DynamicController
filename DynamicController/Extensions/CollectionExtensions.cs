@@ -22,8 +22,7 @@ public static class CollectionExtensions
     /// <returns>Returns True if added, returns False if not.</returns>
     public static bool AddIfNotContains<T>(this ICollection<T> source, T item)
     {
-        if (source is null)
-            throw new ArgumentNullException(nameof(source));
+        ArgumentNullException.ThrowIfNull(source);
 
         if (source.Contains(item))
         {
@@ -43,14 +42,41 @@ public static class CollectionExtensions
     /// <returns>Returns the added items.</returns>
     public static IEnumerable<T> AddIfNotContains<T>(this ICollection<T> source, IEnumerable<T> items)
     {
-        if (source is null)
-            throw new ArgumentNullException(nameof(source));
+        ArgumentNullException.ThrowIfNull(source);
 
         var addedItems = new List<T>();
 
         foreach (var item in items)
         {
             if (source.Contains(item))
+            {
+                continue;
+            }
+
+            source.Add(item);
+            addedItems.Add(item);
+        }
+
+        return addedItems;
+    }
+
+    /// <summary>
+    /// 将尚未在集合中的元素添加到集合中。
+    /// </summary>
+    /// <param name="source">The collection</param>
+    /// <param name="items">Item to check and add</param>
+    /// <param name="predicate">The condition to decide if the item is already in the collection</param>
+    /// <typeparam name="T">Type of the items in the collection</typeparam>
+    /// <returns>Returns the added items.</returns>
+    public static IEnumerable<T> AddIfNotContains<T>(this ICollection<T> source, IEnumerable<T> items, Func<T, bool> predicate)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+
+        var addedItems = new List<T>();
+
+        foreach (var item in items)
+        {
+            if (predicate(item))
             {
                 continue;
             }
@@ -72,12 +98,9 @@ public static class CollectionExtensions
     /// <returns>Returns True if added, returns False if not.</returns>
     public static bool AddIfNotContains<T>(this ICollection<T> source, Func<T, bool> predicate, Func<T> itemFactory)
     {
-        if (source is null)
-            throw new ArgumentNullException(nameof(source));
-        if (predicate is null)
-            throw new ArgumentNullException(nameof(predicate));
-        if (itemFactory is null)
-            throw new ArgumentNullException(nameof(itemFactory));
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(predicate);
+        ArgumentNullException.ThrowIfNull(itemFactory);
 
         if (source.Any(predicate))
         {

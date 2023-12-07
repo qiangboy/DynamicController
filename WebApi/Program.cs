@@ -1,30 +1,14 @@
-using Microsoft.AspNetCore.Mvc;
-
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddSingleton<DynamicControllerConvention>();
-
-builder.Services
-    .AddOptions<MvcOptions>()
-    .Configure<DynamicControllerConvention>((options, convention) =>
-    {
-        options.Conventions.Add(convention);
-    });
-
 // ×¢²á¶¯Ì¬¿ØÖÆÆ÷
-builder.Services.AddControllers(options =>
-{
-    
-}).ConfigureApiBehaviorOptions(options =>
-{
-    //options.SuppressMapClientErrors = false;
-    //options.SuppressModelStateInvalidFilter = false;
-}).ConfigureApplicationPartManager(partManager =>
-{
-    partManager.FeatureProviders.Add(new DynamicControllerFeatureProvider());
-});
+builder.Services
+    .AddControllers()
+    .AddDynamicControllers(options =>
+    {
+        options.AddMapIfNotContains(HttpMethod.Delete.Method, "Delete1", "Delete2");
+    });
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();

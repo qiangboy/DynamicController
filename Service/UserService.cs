@@ -1,15 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-
-namespace Service;
+﻿namespace Service;
 
 /// <summary>
 /// Description: 用户服务
 /// Created on: 2023/10/25 9:55:35
 /// </summary>
-
-public class UserService : ApplicationService
+public class UserService : ApplicationService, IUserService
 {
     [Authorize]
     [ProducesResponseType(StatusCodes.Status201Created)]
@@ -19,6 +14,7 @@ public class UserService : ApplicationService
         return id;
     }
 
+    [AllowAnonymous]
     public List<int> GetByIds(List<int> ids)
     {
         return ids;
@@ -29,14 +25,14 @@ public class UserService : ApplicationService
     /// </summary>
     /// <param name="input"></param>
     /// <returns></returns>
-    public CreateUserDto GetList(CreateUserDto input)
+    public CreateUserDto GetListAsync(CreateUserDto input)
     {
         return input;
     }
 
-    public bool Create([FromQuery] CreateUserDto input)
+    public string? Create(CreateUserDto input, [FromServices] IConfiguration configuration)
     {
-        return true;
+        return configuration["ConnectionStrings:MySql"];
     }
 
     public object Put(int id, CreateUserDto input)
@@ -59,7 +55,7 @@ public class UserService : ApplicationService
         return true;
     }
 
-    public List<int> DeleteList([FromBody] List<int> ids)
+    public List<int> DeleteList(List<int> ids)
     {
         return ids;
     }
@@ -74,6 +70,16 @@ public class UserService : ApplicationService
     {
         return Task.FromResult(new List<int> { 1, 2, 3 });
     }
+
+    public List<int> Delete1List1(List<int> ids)
+    {
+        return ids;
+    }
+
+    public CreateUserDto GetListByIds1Async(CreateUserDto input)
+    {
+        throw new NotImplementedException();
+    }
 }
 
 /// <summary>
@@ -85,12 +91,12 @@ public class CreateUserDto
     /// 用户名
     /// </summary>
     [Required]
-    public string Username { get; set; }
+    public required string Username { get; set; }
 
     /// <summary>
     /// 密码
     /// </summary>
-    public string Password { get; set; }
+    public string? Password { get; set; }
 
     /// <summary>
     /// 年龄
