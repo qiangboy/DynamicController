@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace DynamicController.Options;
+﻿namespace DynamicController.Options;
 
 /// <summary>
 /// 动态控制器配置选项
@@ -12,10 +10,11 @@ public sealed class DynamicControllerConventionOptions
     /// </summary>
     public IDictionary<string, string[]> ActionNameConventionMap { get; set; } = new Dictionary<string, string[]>
     {
-        { HttpMethod.Get.Method, new[] { "Get", "Query", "Search", "Find", "Fetch" } },
+        { HttpMethod.Get.Method, new[] { "GetList", "GetAll", "Get", "Query", "Search", "Find", "Fetch" } },
         { HttpMethod.Post.Method, new[] { "Create", "Save", "Insert", "Add", "Post" } },
         { HttpMethod.Put.Method, new[] { "Put", "Update", "Edit" } },
-        { HttpMethod.Delete.Method, new[] { "Delete", "Remove" } }
+        { HttpMethod.Delete.Method, new[] { "Delete", "Remove" } },
+        { HttpMethod.Patch.Method, new[] { "Patch" } }
     };
 
     /// <summary>
@@ -59,7 +58,7 @@ public sealed class DynamicControllerConventionOptions
             }
         }
 
-        ActionNameConventionMap[mapKey] = map.ToArray();
+        ActionNameConventionMap[mapKey] = map.OrderByDescending(m => m.Length).ToArray();
 
         return this;
     }

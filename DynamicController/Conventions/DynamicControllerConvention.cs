@@ -164,37 +164,30 @@ internal class DynamicControllerConvention : IApplicationModelConvention
     /// <returns></returns>
     private string BuildRoutePath(ActionModel action)
     {
+        var routePathSections = new List<string>{ "api" };
         var httpMethod = GetConventionHttpMethod(action);
         // 控制器路由名称
-        var controllerName = _options.UrlCaseFunc(action.Controller.ControllerName.RemovePostFix(StringComparison.OrdinalIgnoreCase, _options.DeletionPostFix.ToArray()));
-        // 操作路由名称
-        var actionName = action.ActionName;
+        var controllerName = action.Controller.ControllerName.RemovePostFix(StringComparison.OrdinalIgnoreCase, _options.DeletionPostFix.ToArray());
+        routePathSections.Add(controllerName);
 
         // 移除Action动词前缀
         var preFixes = _options.ActionNameConventionMap[httpMethod];
-        actionName = actionName.RemovePreFix(StringComparison.OrdinalIgnoreCase, preFixes);
+        var actionName = action.ActionName.RemovePreFix(StringComparison.OrdinalIgnoreCase, preFixes);
+        var pathName = action.Parameters.FirstOrDefault(p => p.ParameterName.Equals("id", StringComparison.OrdinalIgnoreCase))?.ParameterName;
 
-        // 移除前缀为空字符串时使用路由模板
-        if (actionName.IsNullOrWhiteSpace() && action.Parameters.Count > 0)
+        if (pathName is not null)
         {
-            var parameter = action.Parameters.First();
-            var primitiveParameterName = parameter.ParameterType.IsPrimitive ? parameter.ParameterName : null;
-
-            if (primitiveParameterName is not null)
-            {
-                actionName = $"{{{primitiveParameterName}}}";
-            }
+            routePathSections.Add(pathName.EnsureStartsWith('{').EnsureEndsWith('}'));
         }
 
-        // GET请求时移除 List 前缀
-        if (actionName.Equals("List", StringComparison.OrdinalIgnoreCase))
+        if (!actionName.IsNullOrWhiteSpace())
         {
-            actionName = string.Empty;
+            routePathSections.Add(actionName);
         }
 
-        actionName = _options.UrlCaseFunc(actionName);
-        
-        return $"api/{controllerName}/{actionName}";
+        var finalRoutePath = string.Join("/", routePathSections.Select(s => _options.UrlCaseFunc(s)));
+
+        return finalRoutePath;
     }
 
     /// <summary>

@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-
+using Microsoft.AspNetCore.Http;
 
 namespace WebApi
 {
@@ -45,8 +45,17 @@ namespace WebApi
 
         // DELETE api/<ValuesController>/5
         [HttpDelete("{id}")]
-        public void Delete(int id)
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+        [ProducesDefaultResponseType]
+        public IActionResult Delete(int id)
         {
+            if (id == 0)
+            {
+                return NotFound("");
+            }
+
+            return Ok("");
         }
     }
 }

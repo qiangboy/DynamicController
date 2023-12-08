@@ -8,7 +8,7 @@ public interface IUserService
 
     CreateUserDto GetListAsync(CreateUserDto input);
 
-    string? Create(CreateUserDto input, [FromServices] IConfiguration configuration);
+    string? Create(CreateUserDto input);
 
     object Put(int id, CreateUserDto input);
 

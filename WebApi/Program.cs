@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -5,6 +7,10 @@ var builder = WebApplication.CreateBuilder(args);
 // ◊¢≤·∂ØÃ¨øÿ÷∆∆˜
 builder.Services
     .AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    })
     .AddDynamicControllers(options =>
     {
         options.AddMapIfNotContains(HttpMethod.Delete.Method, "Delete1", "Delete2");
@@ -24,8 +30,8 @@ builder.Services.AddSwaggerGen(options =>
             AuthorizationCode = new OpenApiOAuthFlow
             {
                 //  π”√≈‰÷√
-                AuthorizationUrl = new Uri($"http://124.221.169.49:5000/connect/authorize"),
-                TokenUrl = new Uri($"http://124.221.169.49:5000/connect/token"),
+                AuthorizationUrl = new Uri($"http://localhost:7008/connect/authorize"),
+                TokenUrl = new Uri($"http://localhost:7008/connect/token"),
                 Scopes = new Dictionary<string, string>
                 {
                     { "openid", "openid" },
@@ -35,6 +41,7 @@ builder.Services.AddSwaggerGen(options =>
         }
     });
 
+    options.SchemaFilter<EnumSchemaFilter>();
 
     options.OperationFilter<AuthorizeCheckOperationFilter>();
     // using System.Reflection;
@@ -48,14 +55,21 @@ builder.Services
     .AddAuthentication("Bearer")
     .AddJwtBearer(options =>
     {
-        //options.Authority = "http://124.221.169.49:5000";
-        //options.Audience = "ms.shop";
-        //options.RequireHttpsMetadata = false;
+        options.Authority = "http://localhost:7008";
+        options.RequireHttpsMetadata = false;
 
-        //options.TokenValidationParameters.ValidateAudience = false;
+        options.TokenValidationParameters.ValidateAudience = false;
     });
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("default", policy =>
+    {
+        policy.RequireClaim("name", "admin1");
+    });
+});
+
+builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
 
@@ -68,7 +82,6 @@ if (app.Environment.IsDevelopment())
         options.OAuthClientId("test");
         options.OAuthClientSecret("non");
         options.OAuthScopes("openid profile");
-
     });
 }
 
