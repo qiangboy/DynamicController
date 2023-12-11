@@ -1,7 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-
-namespace WebApi
+﻿namespace WebApi
 {
     /// <summary>
     /// Description: 用户服务
@@ -17,7 +14,7 @@ namespace WebApi
         [Authorize]
         public IEnumerable<string> Get()
         {
-            return new string[] { "value1", "value2" };
+            return new[] { "value1", "value2" };
         }
 
         // GET api/<ValuesController>/5

@@ -17,8 +17,13 @@ public static class DynamicControllerServiceCollectionExtensions
     /// <returns></returns>
     public static IServiceCollection AddDynamicApiControllers(this IServiceCollection services, Action<DynamicControllerConventionOptions>? setupAction = null)
     {
-        var dynamicControllerConventionOptions = new DynamicControllerConventionOptions();
-        setupAction?.Invoke(dynamicControllerConventionOptions);
+        services.Configure<DynamicControllerConventionOptions>(options =>
+        {
+            setupAction?.Invoke(options);
+        });
+
+        //var dynamicControllerConventionOptions = new DynamicControllerConventionOptions();
+        //setupAction?.Invoke(dynamicControllerConventionOptions);
 
         var partManager = services
                 .FirstOrDefault(s => s.ServiceType == typeof(ApplicationPartManager))?.ImplementationInstance as
@@ -28,14 +33,25 @@ public static class DynamicControllerServiceCollectionExtensions
         // 添加控制器特性提供程序
         partManager.FeatureProviders.Add(new DynamicControllerFeatureProvider());
 
+        services.AddSingleton<DynamicControllerConvention>();
+
         // 配置 Mvc 选项
-        services.Configure<MvcOptions>(options =>
-        {
-            // 添加动态控制器约定
-            options.Conventions.Add(new DynamicControllerConvention(dynamicControllerConventionOptions));
-            // 添加模型验证筛选器
-            options.Filters.Add<ModelValidationFilter>();
-        });
+        services.AddOptions<MvcOptions>()
+            .Configure<DynamicControllerConvention>((options, dcc) =>
+            {
+                // 添加动态控制器约定
+                options.Conventions.Add(dcc);
+                // 添加模型验证筛选器
+                options.Filters.Add<ModelValidationFilter>();
+            });
+
+        //services.Configure<MvcOptions>(options =>
+        //{
+        //    // 添加动态控制器约定
+        //    options.Conventions.Add(new DynamicControllerConvention());
+        //    // 添加模型验证筛选器
+        //    options.Filters.Add<ModelValidationFilter>();
+        //});
 
         return services;
     }

@@ -1,10 +1,4 @@
-﻿using System.Globalization;
-using System.Security.Cryptography;
-using System.Text;
-using System.Text.Json;
-using System.Text.RegularExpressions;
-
-namespace System;
+﻿namespace System;
 
 /// <summary>
 /// String 类的扩展方法。

@@ -1,6 +1,12 @@
 ﻿global using System.Collections.Concurrent;
+global using System.Globalization;
 global using System.Reflection;
+global using System.Security.Cryptography;
+global using System.Text;
+global using System.Text.Json;
+global using System.Text.RegularExpressions;
 global using DynamicController.Conventions;
+global using DynamicController.Extensions;
 global using DynamicController.FeatureProviders;
 global using DynamicController.Filters;
 global using DynamicController.Options;

@@ -1,5 +1,3 @@
-using System.Text.Json.Serialization;
-
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -7,10 +5,6 @@ var builder = WebApplication.CreateBuilder(args);
 // 注册动态控制器
 builder.Services
     .AddControllers()
-    .AddJsonOptions(options =>
-    {
-        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-    })
     .AddDynamicControllers(options =>
     {
         options.AddMapIfNotContains(HttpMethod.Delete.Method, "Delete1", "Delete2");
@@ -24,24 +18,26 @@ builder.Services.AddSwaggerGen(options =>
 
     options.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
     {
-        Type = SecuritySchemeType.OAuth2,
-        Flows = new OpenApiOAuthFlows
-        {
-            AuthorizationCode = new OpenApiOAuthFlow
-            {
-                // 使用配置
-                AuthorizationUrl = new Uri($"http://localhost:7008/connect/authorize"),
-                TokenUrl = new Uri($"http://localhost:7008/connect/token"),
-                Scopes = new Dictionary<string, string>
-                {
-                    { "openid", "openid" },
-                    { "profile", "profile" }
-                }
-            }
-        }
+        Type = SecuritySchemeType.OpenIdConnect,
+        OpenIdConnectUrl = new Uri("http://localhost:7008/.well-known/openid-configuration"),
+        //Flows = new OpenApiOAuthFlows
+        //{
+        //    AuthorizationCode = new OpenApiOAuthFlow
+        //    {
+        //        // 使用配置
+        //        //AuthorizationUrl = new Uri($"http://localhost:7008/connect/authorize"),
+        //        //TokenUrl = new Uri($"http://localhost:7008/connect/token"),
+        //        Scopes = new Dictionary<string, string>
+        //        {
+        //            { "openid", "openid" },
+        //            { "profile", "profile" }
+        //        }
+        //    }
+        //}
     });
 
     options.SchemaFilter<EnumSchemaFilter>();
+    options.SchemaFilter<DefaultValueSchemaFilter>();
 
     options.OperationFilter<AuthorizeCheckOperationFilter>();
     // using System.Reflection;

@@ -1,7 +1,4 @@
-﻿using System.ComponentModel;
-using Microsoft.AspNetCore.JsonPatch;
-
-namespace Service;
+﻿namespace Service;
 
 /// <summary>
 /// Description: 用户服务
@@ -71,9 +68,15 @@ public class UserService : ApplicationService, IUserService
         return ids;
     }
 
-    public Task<CreateUserDto> RevokeAsync(CreateUserDto input)
+    public async Task<CreateUserDto> RevokeAsync(CreateUserDto input)
     {
-        return Task.FromResult(input);
+        Console.WriteLine(Environment.CurrentManagedThreadId); // main thread
+        await Task.CompletedTask;
+        Console.WriteLine(Environment.CurrentManagedThreadId); // main thread
+        await Task.CompletedTask.ConfigureAwait(false);
+        Console.WriteLine(Environment.CurrentManagedThreadId); // thread pool thread
+
+        return await Task.FromResult(input);
     }
 
     [Authorize]
@@ -127,6 +130,22 @@ public class UserService : ApplicationService, IUserService
     {
         return id;
     }
+
+    public Guid UpdateEditorAsync(Guid id, Guid editorId, CreateUserDto input)
+    {
+        return id;
+    }
+
+    [HttpPut("api/[controller]/{id}/[action]/{editorId}/my-editor/{subeditorId}")]
+    public Guid UpdateEditorMyNameAsync(Guid id, Guid editorId, Guid subEditorId, CreateUserDto input)
+    {
+        return id;
+    }
+
+    public Guid PostSomeAsync(Guid id, CreateUserDto input)
+    {
+        return id;
+    }
 }
 
 /// <summary>
@@ -148,13 +167,15 @@ public class CreateUserDto
     /// <summary>
     /// 年龄
     /// </summary>
-    [Required]
-    public int? Age { get; set; }
+    //[Required]
+    [DefaultValue(100)]
+    public int? Age { get; set; } = 10;
 
     /// <summary>
     /// 状态
     /// </summary>
-    public Status Status { get; set; }
+    [EnumDataType(typeof(Status))] // 标记枚举类型，并验证
+    public Status? Status { get; set; }
 }
 
 /// <summary>
@@ -166,10 +187,10 @@ public enum Status
     /// 关闭
     /// </summary>
     [Description("关闭")]
-    Close,
+    Close = 1,
     /// <summary>
     /// 进行中
     /// </summary>
     [Description("进行中")]
-    Pending
+    Pending = 2
 }

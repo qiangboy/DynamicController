@@ -7,9 +7,9 @@ internal class DynamicControllerConvention : IApplicationModelConvention
 {
     private readonly DynamicControllerConventionOptions _options;
 
-    public DynamicControllerConvention(DynamicControllerConventionOptions options)
+    public DynamicControllerConvention(IOptions<DynamicControllerConventionOptions> options)
     {
-        _options = options;
+        _options = options.Value;
     }
 
 
@@ -103,7 +103,7 @@ internal class DynamicControllerConvention : IApplicationModelConvention
             }
 
             // 参数为系统基本类型，跳过
-            if (parameter.ParameterType.IsPrimitive)
+            if (parameter.ParameterType.IsRichPrimitive())
             {
                 continue;
             }
@@ -121,13 +121,23 @@ internal class DynamicControllerConvention : IApplicationModelConvention
     /// <returns></returns>
     private SelectorModel ConfigureSelectorModel(SelectorModel selectorModel, ActionModel action)
     {
-        var httpMethod = GetConventionHttpMethod(action);
+        if (selectorModel.AttributeRouteModel?.Attribute is null)
+        {
+            var routePath = BuildRoutePath(action);
+            // 给此Action添加路由
+            selectorModel.AttributeRouteModel = new AttributeRouteModel(new RouteAttribute(routePath));
+        }
 
-        var routePath = BuildRoutePath(action);
-        // 给此Action添加路由
-        selectorModel.AttributeRouteModel = new AttributeRouteModel(new RouteAttribute(routePath));
-        // 添加HttpMethod
-        selectorModel.ActionConstraints.Add(new HttpMethodActionConstraint(new[] { httpMethod }));
+        if (selectorModel.AttributeRouteModel.Template is not null)
+        {
+            selectorModel.AttributeRouteModel.Template = ReplaceRoutePath(action, selectorModel);
+        }
+
+        if (!selectorModel.ActionConstraints.Any())
+        {
+            // 添加HttpMethod
+            selectorModel.ActionConstraints.Add(new HttpMethodActionConstraint(new[] { GetConventionHttpMethod(action) }));
+        }
 
         return selectorModel;
     }
@@ -164,30 +174,73 @@ internal class DynamicControllerConvention : IApplicationModelConvention
     /// <returns></returns>
     private string BuildRoutePath(ActionModel action)
     {
-        var routePathSections = new List<string>{ "api" };
-        var httpMethod = GetConventionHttpMethod(action);
+        var routePathSections = _options.RoutePreFixes.ToList();
+        // 控制器路由名称
+        routePathSections.Add(GetCaseControllerName(action));
+
+        // 移除Action动词前缀
+        var actionName = GetCaseActionName(action);
+        var pathNames = action.Parameters.Where(p => p.ParameterName.EndsWith("id", StringComparison.OrdinalIgnoreCase));
+
+        if (pathNames.Any())
+        {
+            routePathSections.Add(pathNames.First().ParameterName.EnsureStartsWith('{').EnsureEndsWith('}'));
+
+            if (!actionName.IsNullOrWhiteSpace())
+            {
+                routePathSections.Add(_options.UrlCaseFunc(actionName));
+            }
+
+            var subResourceParameter = pathNames.ElementAtOrDefault(1);
+
+            if (subResourceParameter is not null)
+            {
+                routePathSections.Add(subResourceParameter.ParameterName.EnsureStartsWith('{').EnsureEndsWith('}'));
+            }
+        }
+        else
+        {
+            if (!actionName.IsNullOrWhiteSpace())
+            {
+                routePathSections.Add(_options.UrlCaseFunc(actionName));
+            }
+        }
+
+        var finalRoutePath = string.Join("/", routePathSections);
+
+        return finalRoutePath;
+    }
+
+    private string GetCaseControllerName(ActionModel action)
+    {
         // 控制器路由名称
         var controllerName = action.Controller.ControllerName.RemovePostFix(StringComparison.OrdinalIgnoreCase, _options.DeletionPostFix.ToArray());
-        routePathSections.Add(controllerName);
+        return _options.UrlCaseFunc(controllerName);
+    }
 
+    private string GetCaseActionName(ActionModel action)
+    {
+        var httpMethod = GetConventionHttpMethod(action);
         // 移除Action动词前缀
         var preFixes = _options.ActionNameConventionMap[httpMethod];
         var actionName = action.ActionName.RemovePreFix(StringComparison.OrdinalIgnoreCase, preFixes);
-        var pathName = action.Parameters.FirstOrDefault(p => p.ParameterName.Equals("id", StringComparison.OrdinalIgnoreCase))?.ParameterName;
 
-        if (pathName is not null)
+        return _options.UrlCaseFunc(actionName);
+    }
+
+    private string? ReplaceRoutePath(ActionModel action, SelectorModel selectorModel)
+    {
+        var controllerName = GetCaseControllerName(action);
+        var actionName = GetCaseActionName(action);
+
+        if (selectorModel.AttributeRouteModel?.Template is not null)
         {
-            routePathSections.Add(pathName.EnsureStartsWith('{').EnsureEndsWith('}'));
+            return selectorModel.AttributeRouteModel.Template
+                .Replace("[controller]", controllerName)
+                .Replace("[action]", actionName);
         }
 
-        if (!actionName.IsNullOrWhiteSpace())
-        {
-            routePathSections.Add(actionName);
-        }
-
-        var finalRoutePath = string.Join("/", routePathSections.Select(s => _options.UrlCaseFunc(s)));
-
-        return finalRoutePath;
+        return null;
     }
 
     /// <summary>

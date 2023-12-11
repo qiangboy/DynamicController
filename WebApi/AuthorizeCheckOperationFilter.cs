@@ -1,14 +1,11 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Swashbuckle.AspNetCore.SwaggerGen;
-
-namespace WebApi;
+﻿namespace WebApi;
 
 /// <summary>
 /// 授权检查操作过滤器
 /// </summary>
 public class AuthorizeCheckOperationFilter : IOperationFilter
 {
-    private static readonly string[] item = new [] { "web api" };
+    private static readonly string[] item = { "web api" };
 
     /// <summary>
     /// 应用

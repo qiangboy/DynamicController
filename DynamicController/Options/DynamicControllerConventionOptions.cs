@@ -8,7 +8,7 @@ public sealed class DynamicControllerConventionOptions
     /// <summary>
     /// 操作名约定映射字典
     /// </summary>
-    public IDictionary<string, string[]> ActionNameConventionMap { get; set; } = new Dictionary<string, string[]>
+    public IDictionary<string, string[]> ActionNameConventionMap { get; init; } = new Dictionary<string, string[]>
     {
         { HttpMethod.Get.Method, new[] { "GetList", "GetAll", "Get", "Query", "Search", "Find", "Fetch" } },
         { HttpMethod.Post.Method, new[] { "Create", "Save", "Insert", "Add", "Post" } },
@@ -20,12 +20,17 @@ public sealed class DynamicControllerConventionOptions
     /// <summary>
     /// 控制器名移除后缀列表
     /// </summary>
-    public List<string> DeletionPostFix { get; set; } = new(){ "Service" };
+    public ICollection<string> DeletionPostFix { get; init; } = new[] { "Service" };
 
     /// <summary>
     /// url风格委托
     /// </summary>
-    public Func<string, string> UrlCaseFunc { get; set; } = section => section.ToKebabCase();
+    public Func<string, string> UrlCaseFunc { get; init; } = section => section.ToKebabCase();
+
+    /// <summary>
+    /// 路由前缀列表
+    /// </summary>
+    public ICollection<string> RoutePreFixes { get; init; } = new[] { "api" };
 
     /// <summary>
     /// 获取按照约定的推断的HttpMethod
@@ -48,6 +53,13 @@ public sealed class DynamicControllerConventionOptions
     /// <returns></returns>
     public DynamicControllerConventionOptions AddMapIfNotContains(string mapKey, params string[] preFixes)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(mapKey);
+
+        if (preFixes is { Length: 0 } )
+        {
+            return this;
+        }
+
         var map = ActionNameConventionMap[mapKey].ToList();
 
         foreach (var fix in preFixes)
