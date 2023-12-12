@@ -626,10 +626,10 @@ public static class StringExtensions
     /// <returns></returns>
     public static string ToSingular(this string word)
     {
-        Regex plural1 = new Regex("(?<keep>[^aeiou])ies$");
-        Regex plural2 = new Regex("(?<keep>[aeiou]y)s$");
-        Regex plural3 = new Regex("(?<keep>[sxzh])es$");
-        Regex plural4 = new Regex("(?<keep>[^sxzhyu])s$");
+        Regex plural1 = new("(?<keep>[^aeiou])ies$");
+        Regex plural2 = new("(?<keep>[aeiou]y)s$");
+        Regex plural3 = new("(?<keep>[sxzh])es$");
+        Regex plural4 = new("(?<keep>[^sxzhyu])s$");
 
         if (plural1.IsMatch(word))
             return plural1.Replace(word, "${keep}y");
@@ -649,10 +649,10 @@ public static class StringExtensions
     /// <returns></returns>
     public static string ToPlural(this string word)
     {
-        Regex plural1 = new Regex("(?<keep>[^aeiou])y$");
-        Regex plural2 = new Regex("(?<keep>[aeiou]y)$");
-        Regex plural3 = new Regex("(?<keep>[sxzh])$");
-        Regex plural4 = new Regex("(?<keep>[^sxzhy])$");
+        Regex plural1 = new("(?<keep>[^aeiou])y$");
+        Regex plural2 = new("(?<keep>[aeiou]y)$");
+        Regex plural3 = new("(?<keep>[sxzh])$");
+        Regex plural4 = new("(?<keep>[^sxzhy])$");
 
         if (plural1.IsMatch(word))
             return plural1.Replace(word, "${keep}ies");

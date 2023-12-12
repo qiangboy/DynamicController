@@ -9,6 +9,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebApi", "WebApi\WebApi.csp
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Service", "Service\Service.csproj", "{FAA31D45-CC9E-4382-85EA-74AEA6E1407D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DependencyInjection", "DependencyInjection\DependencyInjection.csproj", "{55989B47-933D-420D-9055-40F4E8DC9A41}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{FAA31D45-CC9E-4382-85EA-74AEA6E1407D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FAA31D45-CC9E-4382-85EA-74AEA6E1407D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FAA31D45-CC9E-4382-85EA-74AEA6E1407D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{55989B47-933D-420D-9055-40F4E8DC9A41}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{55989B47-933D-420D-9055-40F4E8DC9A41}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{55989B47-933D-420D-9055-40F4E8DC9A41}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{55989B47-933D-420D-9055-40F4E8DC9A41}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

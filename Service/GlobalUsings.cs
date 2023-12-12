@@ -2,6 +2,7 @@
 
 global using System.ComponentModel;
 global using System.ComponentModel.DataAnnotations;
+global using DependencyInjection;
 global using DynamicController;
 global using Microsoft.AspNetCore.Authorization;
 global using Microsoft.AspNetCore.Http;

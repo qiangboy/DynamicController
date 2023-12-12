@@ -19,4 +19,5 @@ global using Microsoft.AspNetCore.Mvc.Controllers;
 global using Microsoft.AspNetCore.Mvc.Filters;
 global using Microsoft.AspNetCore.Mvc.ModelBinding;
 global using Microsoft.AspNetCore.Mvc.Routing;
+global using Microsoft.Extensions.Logging;
 global using Microsoft.Extensions.Options;

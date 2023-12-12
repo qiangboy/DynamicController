@@ -3,7 +3,7 @@
 /// <summary>
 /// 动态控制器约定
 /// </summary>
-internal class DynamicControllerConvention(IOptions<DynamicControllerConventionOptions> options) : IApplicationModelConvention
+internal class DynamicControllerConvention(IOptions<DynamicControllerConventionOptions> options, ILogger<DynamicControllerConvention> logger) : IApplicationModelConvention
 {
     private readonly DynamicControllerConventionOptions _options = options.Value;
 
@@ -30,8 +30,22 @@ internal class DynamicControllerConvention(IOptions<DynamicControllerConventionO
     /// <param name="controller"></param>
     private void ConfigureControllers(ControllerModel controller)
     {
+        // 使在 Service 标记的 RouteAttribute 时效
+        if (controller.Attributes.Any(a => a is RouteAttribute))
+        {
+            logger.LogWarning("[{ServiceName}] class is marked with [{RouteAttribute}] and will be removed and invalidated.",
+                controller.ControllerName,
+                nameof(RouteAttribute));
+
+            foreach (var controllerSelector in controller.Selectors)
+            {
+                controllerSelector.AttributeRouteModel = null;
+            }
+        }
+
         // 设置控制器名称
-        controller.ControllerName = controller.ControllerName.RemovePostFix(StringComparison.OrdinalIgnoreCase, [.. _options.DeletionPostFix]);
+        controller.ControllerName = controller.ControllerName.RemovePostFix([.._options.DeletionPostFix]);
+        
 
         foreach (var action in controller.Actions)
         {
@@ -208,7 +222,7 @@ internal class DynamicControllerConvention(IOptions<DynamicControllerConventionO
     private string GetCaseControllerName(ActionModel action)
     {
         // 控制器路由名称
-        var controllerName = action.Controller.ControllerName.RemovePostFix(StringComparison.OrdinalIgnoreCase, [.. _options.DeletionPostFix]);
+        var controllerName = action.Controller.ControllerName.RemovePostFix([.._options.DeletionPostFix]);
         return _options.UrlCaseFunc(controllerName);
     }
 

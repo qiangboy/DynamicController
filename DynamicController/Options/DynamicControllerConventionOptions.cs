@@ -20,17 +20,17 @@ public sealed class DynamicControllerConventionOptions
     /// <summary>
     /// 控制器名移除后缀列表
     /// </summary>
-    public ICollection<string> DeletionPostFix { get; init; } = ["Service"];
+    public ICollection<string> DeletionPostFix { get; set; } = ["Service"];
 
     /// <summary>
     /// url风格委托
     /// </summary>
-    public Func<string, string> UrlCaseFunc { get; init; } = section => section.ToKebabCase();
+    public Func<string, string> UrlCaseFunc { get; set; } = section => section.ToKebabCase();
 
     /// <summary>
     /// 路由前缀列表
     /// </summary>
-    public ICollection<string> RoutePreFixes { get; init; } = ["api"];
+    public ICollection<string> RoutePreFixes { get; set; } = ["api"];
 
     /// <summary>
     /// 获取按照约定的推断的HttpMethod
@@ -70,7 +70,7 @@ public sealed class DynamicControllerConventionOptions
             }
         }
 
-        ActionNameConventionMap[mapKey] = [.. map.OrderByDescending(m => m.Length)];
+        ActionNameConventionMap[mapKey] = [..map.OrderByDescending(m => m.Length)];
 
         return this;
     }

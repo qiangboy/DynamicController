@@ -5,7 +5,7 @@
 /// Created on: 2023/10/25 9:55:35
 /// </summary>
 [Route("api/[controller]/[action]")]
-public class UserService(IHttpContextAccessor httpContextAccessor) : ApplicationService, IUserService
+public class UserService(IHttpContextAccessor httpContextAccessor) : ApplicationService, IUserService, ITransientDependency
 {
     [Authorize(Roles = "admin")]
     [ProducesResponseType(StatusCodes.Status201Created)]
@@ -130,7 +130,7 @@ public class UserService(IHttpContextAccessor httpContextAccessor) : Application
         return id;
     }
 
-    [HttpPut("api/[controller]/{id}/[action]/{editorId}/my-editor/{subeditorId}")]
+    [HttpPut("api/[controller]/{id:guid}/[action]/{editorId}/my-editor/{subeditorId}")]
     public Guid UpdateEditorMyNameAsync(Guid id, Guid editorId, Guid subEditorId, CreateUserDto input)
     {
         return id;

@@ -1,5 +1,9 @@
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Host
+    .UseServiceProviderFactory(new AutofacServiceProviderFactory())
+    .ConfigureContainer<ContainerBuilder>(cb => cb.RegisterDependency(ReflectionHelper.GetAllReferencedAssemblies().ToArray()));
+
 // Add services to the container.
 
 // ×¢²á¶¯Ì¬¿ØÖÆÆ÷
@@ -8,6 +12,7 @@ builder.Services
     .AddDynamicControllers(options =>
     {
         options.AddMapIfNotContains(HttpMethod.Delete.Method, "Delete1", "Delete2");
+        options.UrlCaseFunc = s => s.ToKebabCase();
     });
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -57,15 +62,17 @@ builder.Services
         options.TokenValidationParameters.ValidateAudience = false;
     });
 
-builder.Services.AddAuthorization(options =>
-{
-    options.AddPolicy("default", policy =>
+builder.Services.AddAuthorization();
+
+builder.Services.AddAuthorizationBuilder()
+    .AddPolicy("default", policyBuilder =>
     {
-        policy.RequireClaim("name", "admin1");
+        policyBuilder.RequireClaim("name", "admin");
     });
-});
 
 builder.Services.AddHttpContextAccessor();
+
+//builder.Services.AddTransient<IUserService, UserService>();
 
 var app = builder.Build();
 
