@@ -4,15 +4,9 @@
 /// Description: 用户服务
 /// Created on: 2023/10/25 9:55:35
 /// </summary>
-public class UserService : ApplicationService, IUserService
+[Route("api/[controller]/[action]")]
+public class UserService(IHttpContextAccessor httpContextAccessor) : ApplicationService, IUserService
 {
-    private readonly IHttpContextAccessor _httpContextAccessor;
-
-    public UserService(IHttpContextAccessor httpContextAccessor)
-    {
-        _httpContextAccessor = httpContextAccessor;
-    }
-
     [Authorize(Roles = "admin")]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -40,7 +34,7 @@ public class UserService : ApplicationService, IUserService
 
     public string? Create(CreateUserDto input)
     {
-        return _httpContextAccessor.HttpContext?.User.FindFirst("name")?.Value;
+        return httpContextAccessor.HttpContext?.User.FindFirst("name")?.Value;
     }
 
     public object Put(int id, CreateUserDto input)

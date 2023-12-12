@@ -18,7 +18,7 @@
         }
 
         // GET api/<ValuesController>/5
-        [HttpGet("{id}")]
+        [HttpGet("{id:int}")]
         public string Get(int id)
         {
             return "value";

@@ -3,18 +3,16 @@
 /// <summary>
 /// 模型验证筛选器
 /// </summary>
-public sealed class ModelValidationFilter : IAsyncActionFilter, IOrderedFilter
+/// <remarks>
+/// 构造函数
+/// </remarks>
+/// <param name="options"></param>
+public sealed class ModelValidationFilter(IOptions<ApiBehaviorOptions> options) : IAsyncActionFilter, IOrderedFilter
 {
     /// <summary>
     /// Api行为配置选项
     /// </summary>
-    private readonly ApiBehaviorOptions _apiBehaviorOptions;
-
-    /// <summary>
-    /// 构造函数
-    /// </summary>
-    /// <param name="options"></param>
-    public ModelValidationFilter(IOptions<ApiBehaviorOptions> options) => _apiBehaviorOptions = options.Value;
+    private readonly ApiBehaviorOptions _apiBehaviorOptions = options.Value;
 
     /// <summary>
     /// 排序

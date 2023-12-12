@@ -3,15 +3,9 @@
 /// <summary>
 /// 动态控制器约定
 /// </summary>
-internal class DynamicControllerConvention : IApplicationModelConvention
+internal class DynamicControllerConvention(IOptions<DynamicControllerConventionOptions> options) : IApplicationModelConvention
 {
-    private readonly DynamicControllerConventionOptions _options;
-
-    public DynamicControllerConvention(IOptions<DynamicControllerConventionOptions> options)
-    {
-        _options = options.Value;
-    }
-
+    private readonly DynamicControllerConventionOptions _options = options.Value;
 
     public void Apply(ApplicationModel application) => ConfigureApplicationService(application);
 
@@ -37,7 +31,7 @@ internal class DynamicControllerConvention : IApplicationModelConvention
     private void ConfigureControllers(ControllerModel controller)
     {
         // 设置控制器名称
-        controller.ControllerName = controller.ControllerName.RemovePostFix(StringComparison.OrdinalIgnoreCase, _options.DeletionPostFix.ToArray());
+        controller.ControllerName = controller.ControllerName.RemovePostFix(StringComparison.OrdinalIgnoreCase, [.. _options.DeletionPostFix]);
 
         foreach (var action in controller.Actions)
         {
@@ -214,7 +208,7 @@ internal class DynamicControllerConvention : IApplicationModelConvention
     private string GetCaseControllerName(ActionModel action)
     {
         // 控制器路由名称
-        var controllerName = action.Controller.ControllerName.RemovePostFix(StringComparison.OrdinalIgnoreCase, _options.DeletionPostFix.ToArray());
+        var controllerName = action.Controller.ControllerName.RemovePostFix(StringComparison.OrdinalIgnoreCase, [.. _options.DeletionPostFix]);
         return _options.UrlCaseFunc(controllerName);
     }
 
@@ -250,13 +244,11 @@ internal class DynamicControllerConvention : IApplicationModelConvention
     /// <returns></returns>
     private string GetConventionHttpMethod(ActionModel action)
     {
-        var routeAttributes = action.ActionMethod.GetCustomAttributes(typeof(HttpMethodAttribute), false);
-        // 是否标记 HttpMethodAttribute，标记了直接取，否则从方法名中按约定推断
-        if (!routeAttributes.IsNullOrEmpty())
-        {
-            return routeAttributes.SelectMany(m => (m as HttpMethodAttribute)!.HttpMethods).Distinct().First();
-        }
+        var routeAttributes = action.ActionMethod.GetCustomAttributes<HttpMethodAttribute>(false);
 
-        return _options.GetConventionHttpMethod(action.ActionMethod.Name);
+        // 是否标记 HttpMethodAttribute，标记了直接取，否则从方法名中按约定推断
+        return routeAttributes.Any() ? 
+            routeAttributes.SelectMany(m => m.HttpMethods).Distinct().First() :
+            _options.GetConventionHttpMethod(action.ActionMethod.Name);
     }
 }

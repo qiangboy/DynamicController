@@ -1,6 +1,6 @@
 ﻿namespace DynamicController.Extensions;
 
-internal static class ObjectExtensions
+public static class ObjectExtensions
 {
     /// <summary>
     /// 判断是否是富基元类型

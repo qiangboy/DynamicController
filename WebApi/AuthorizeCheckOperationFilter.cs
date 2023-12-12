@@ -5,7 +5,7 @@
 /// </summary>
 public class AuthorizeCheckOperationFilter : IOperationFilter
 {
-    private static readonly string[] item = { "web api" };
+    private static readonly string[] item = ["web api"];
 
     /// <summary>
     /// 应用
@@ -30,7 +30,8 @@ public class AuthorizeCheckOperationFilter : IOperationFilter
             {
                 new()
                 {
-                    [ oAuthScheme ] = item }
+                    [ oAuthScheme ] = item
+                }
             };
         }
     }

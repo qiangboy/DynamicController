@@ -13,7 +13,9 @@ public static class StringExtensions
         ArgumentNullException.ThrowIfNull(str);
 
         if (str.EndsWith(c.ToString(), comparisonType))
+        {
             return str;
+        }
 
         return str + c;
     }

@@ -10,17 +10,17 @@ public sealed class DynamicControllerConventionOptions
     /// </summary>
     public IDictionary<string, string[]> ActionNameConventionMap { get; init; } = new Dictionary<string, string[]>
     {
-        { HttpMethod.Get.Method, new[] { "GetList", "GetAll", "Get", "Query", "Search", "Find", "Fetch" } },
-        { HttpMethod.Post.Method, new[] { "Create", "Save", "Insert", "Add", "Post" } },
-        { HttpMethod.Put.Method, new[] { "Put", "Update", "Edit" } },
-        { HttpMethod.Delete.Method, new[] { "Delete", "Remove" } },
-        { HttpMethod.Patch.Method, new[] { "Patch" } }
+        { HttpMethod.Get.Method, ["GetList", "GetAll", "Get", "Query", "Search", "Find", "Fetch"] },
+        { HttpMethod.Post.Method, ["Create", "Save", "Insert", "Add", "Post"] },
+        { HttpMethod.Put.Method, ["Put", "Update", "Edit"] },
+        { HttpMethod.Delete.Method, ["Delete", "Remove"] },
+        { HttpMethod.Patch.Method, ["Patch"] }
     };
 
     /// <summary>
     /// 控制器名移除后缀列表
     /// </summary>
-    public ICollection<string> DeletionPostFix { get; init; } = new[] { "Service" };
+    public ICollection<string> DeletionPostFix { get; init; } = ["Service"];
 
     /// <summary>
     /// url风格委托
@@ -30,7 +30,7 @@ public sealed class DynamicControllerConventionOptions
     /// <summary>
     /// 路由前缀列表
     /// </summary>
-    public ICollection<string> RoutePreFixes { get; init; } = new[] { "api" };
+    public ICollection<string> RoutePreFixes { get; init; } = ["api"];
 
     /// <summary>
     /// 获取按照约定的推断的HttpMethod
@@ -39,10 +39,10 @@ public sealed class DynamicControllerConventionOptions
     /// <returns></returns>
     public string GetConventionHttpMethod(string actionName)
     {
-        bool FindPredicate(KeyValuePair<string, string[]> m) => m.Value.Any(v => actionName.StartsWith(v, StringComparison.OrdinalIgnoreCase));
-
         return ActionNameConventionMap
             .FirstOrDefault(FindPredicate, ActionNameConventionMap.First(m => m.Key == HttpMethod.Post.Method)).Key;
+
+        bool FindPredicate(KeyValuePair<string, string[]> m) => m.Value.Any(v => actionName.StartsWith(v, StringComparison.OrdinalIgnoreCase));
     }
 
     /// <summary>
@@ -55,7 +55,7 @@ public sealed class DynamicControllerConventionOptions
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(mapKey);
 
-        if (preFixes is { Length: 0 } )
+        if (preFixes is { Length: 0 })
         {
             return this;
         }
@@ -70,7 +70,7 @@ public sealed class DynamicControllerConventionOptions
             }
         }
 
-        ActionNameConventionMap[mapKey] = map.OrderByDescending(m => m.Length).ToArray();
+        ActionNameConventionMap[mapKey] = [.. map.OrderByDescending(m => m.Length)];
 
         return this;
     }
