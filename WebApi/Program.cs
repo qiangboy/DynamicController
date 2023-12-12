@@ -46,9 +46,9 @@ builder.Services.AddSwaggerGen(options =>
 
     options.OperationFilter<AuthorizeCheckOperationFilter>();
     // using System.Reflection;
-    var xmlFilename2 = $"Service.xml";
+    var xmlFilename2 = "Service.xml";
     options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename2), true);
-    var xmlFilename = $"WebApi.xml";
+    var xmlFilename = "WebApi.xml";
     options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename), true);
 });
 
@@ -71,8 +71,6 @@ builder.Services.AddAuthorizationBuilder()
     });
 
 builder.Services.AddHttpContextAccessor();
-
-//builder.Services.AddTransient<IUserService, UserService>();
 
 var app = builder.Build();
 

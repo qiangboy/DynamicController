@@ -22,9 +22,6 @@ public static class DynamicControllerServiceCollectionExtensions
             setupAction?.Invoke(options);
         });
 
-        //var dynamicControllerConventionOptions = new DynamicControllerConventionOptions();
-        //setupAction?.Invoke(dynamicControllerConventionOptions);
-
         var partManager = services
                 .FirstOrDefault(s => s.ServiceType == typeof(ApplicationPartManager))?.ImplementationInstance as
                 ApplicationPartManager ?? throw new InvalidOperationException(
@@ -44,14 +41,6 @@ public static class DynamicControllerServiceCollectionExtensions
                 // 添加模型验证筛选器
                 options.Filters.Add<ModelValidationFilter>();
             });
-
-        //services.Configure<MvcOptions>(options =>
-        //{
-        //    // 添加动态控制器约定
-        //    options.Conventions.Add(new DynamicControllerConvention());
-        //    // 添加模型验证筛选器
-        //    options.Filters.Add<ModelValidationFilter>();
-        //});
 
         return services;
     }
