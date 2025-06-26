@@ -2,6 +2,11 @@
 
 public class DefaultValueSchemaFilter : ISchemaFilter
 {
+    /// <summary>
+    /// 添加默认参数
+    /// </summary>
+    /// <param name="schema"></param>
+    /// <param name="context"></param>
     public void Apply(OpenApiSchema schema, SchemaFilterContext context)
     {
         // 判断入参类型，添加默认参数
