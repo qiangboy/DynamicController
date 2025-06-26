@@ -1,5 +1,8 @@
 ﻿namespace WebApi;
 
+/// <summary>
+/// 默认值过滤
+/// </summary>
 public class DefaultValueSchemaFilter : ISchemaFilter
 {
     public void Apply(OpenApiSchema schema, SchemaFilterContext context)
