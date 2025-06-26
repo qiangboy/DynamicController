@@ -4,6 +4,7 @@ public class DefaultValueSchemaFilter : ISchemaFilter
 {
     public void Apply(OpenApiSchema schema, SchemaFilterContext context)
     {
+        // 判断入参类型，添加默认参数
         if (context.Type.IsAssignableFrom(typeof(CreateUserDto)))
         {
             foreach (var property in schema.Properties)
